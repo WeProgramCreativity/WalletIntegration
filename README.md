@@ -18,7 +18,7 @@ npx hardhat run scripts/deploy.js --network localhost
 ## Steps to deploy to a live network
 
 ```
-npx hardhat run scripts/deploy.js --network goerli
+npx hardhat run scripts/deploy.js --network sepolia
 ```
 
 ## Steps to test
