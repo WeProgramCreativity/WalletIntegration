@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import contractAddress from "./contracts/contract-address.json";
 import CMArtifact from "./contracts/CM.json";
 import { ethers } from "ethers";
+const Web3 = require("web3");
 
 function App() {
   const ERROR_CODE_TX_REJECTED_BY_USER = 4001;
@@ -19,26 +20,44 @@ function App() {
   const [giftTokens, setGiftTokens] = useState("");
 
   const connectWallet = async () => {
-    setNetworkError(undefined);
-    setTransactionError(undefined);
-    const [selectedAddress] = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    });
-    setSelectedAddress(selectedAddress);
+    try {
+      setNetworkError(undefined);
+      setTransactionError(undefined);
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const [selectedAddress] = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      setSelectedAddress(selectedAddress);
 
-    const cm = new ethers.Contract(
-      contractAddress.CM,
-      CMArtifact.abi,
-      provider.getSigner(0)
-    );
-    setCm(cm);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      const cm = new ethers.Contract(
+        contractAddress.CM,
+        CMArtifact.abi,
+        provider.getSigner(selectedAddress)
+      );
+      setCm(cm);
+
+      await fetchTokenBalance();
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
   };
 
   const fetchTokenBalance = async () => {
-    const balance = await cm.getTokenBalance();
-    setBalance(balance);
+    try {
+      if (!cm) {
+        console.error("Contract not initialized. Call connectWallet first.");
+        return;
+      }
+
+      const balance = await cm.getTokenBalance();
+      console.log("Token Balance:", balance);
+
+      setBalance(balance);
+    } catch (error) {
+      console.error("Error fetching token balance:", error);
+    }
   };
 
   const buyTokens = async () => {
